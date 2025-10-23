@@ -106,19 +106,29 @@ class RSSService {
   ): Promise<NewsArticleType[]> {
     const filters = Array.isArray(raceFilter) ? raceFilter : [raceFilter];
 
-    // Find feeds that match any of the race filters
     const matchingFeeds = feeds.filter((feed) => {
-      // Check if feed has a raceFilter that matches any of our filters
-      if (feed.raceFilter && filters.includes(feed.raceFilter)) {
-        return true;
-      }
-
-      // For category pages (multiple tags), also include general election feeds
-      // We can detect category pages because they pass arrays with tags like "ga_executive", "ga_state", etc.
-      if (Array.isArray(raceFilter) && raceFilter.length > 1) {
-        if (feed.category === "elections" || feed.category === "news-outlet") {
+      // If this is a single raceFilter (from a race page):
+      // - Match feeds with exact raceFilter
+      // - Include feeds with "all" tag (general news)
+      if (!Array.isArray(raceFilter)) {
+        if (feed.raceFilter === raceFilter) {
           return true;
         }
+        if (feed.raceTags && feed.raceTags.includes("all")) {
+          return true;
+        }
+        return false;
+      }
+
+      // If this is an array of raceTags (from a category page):
+      // - Match feeds where ANY feed.raceTags intersects with the category raceTags
+      // - Include feeds with "all" tag
+      if (feed.raceTags) {
+        if (feed.raceTags.includes("all")) {
+          return true;
+        }
+        // Check if any feed tag matches any category tag
+        return feed.raceTags.some((tag) => filters.includes(tag));
       }
 
       return false;

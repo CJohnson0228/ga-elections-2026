@@ -137,6 +137,7 @@ export interface RSSFeedType {
   description?: string;
   candidateId?: string;
   raceFilter?: string; // For filtering by specific race
+  raceTags?: string[]; // Hierarchical tags for broader filtering
 }
 
 export interface RSSFeedConfig {
