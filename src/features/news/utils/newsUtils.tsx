@@ -56,11 +56,10 @@ const fetchNews = async ({
         10
       );
     } else if (raceFilter && raceFilter !== "all") {
-      // Convert array of tags to comma-separated string for RSS service
-      const filterString = Array.isArray(raceFilter) ? raceFilter[0] : raceFilter;
-      liveNews = await rssService.fetchByCategory(
+      // Use the new fetchByRaceFilter method that handles both strings and arrays
+      liveNews = await rssService.fetchByRaceFilter(
         feedConfig.feeds,
-        filterString,
+        raceFilter,
         10
       );
     } else {

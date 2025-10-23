@@ -99,6 +99,31 @@ class RSSService {
     return this.fetchMultipleFeeds(categoryFeeds, limit);
   }
 
+  async fetchByRaceFilter(
+    feeds: RSSFeedType[],
+    raceFilter: string | string[],
+    limit: number = 10
+  ): Promise<NewsArticleType[]> {
+    const filters = Array.isArray(raceFilter) ? raceFilter : [raceFilter];
+
+    // Find feeds that match any of the race filters or race tags
+    const matchingFeeds = feeds.filter((feed) => {
+      // Check if feed has a raceFilter that matches any of our filters
+      if (feed.raceFilter && filters.includes(feed.raceFilter)) {
+        return true;
+      }
+
+      // Also include general election feeds and news outlets
+      if (feed.category === "elections" || feed.category === "news-outlet") {
+        return true;
+      }
+
+      return false;
+    });
+
+    return this.fetchMultipleFeeds(matchingFeeds, limit);
+  }
+
   async fetchByCandidateId(
     feeds: RSSFeedType[],
     candidateId: string,

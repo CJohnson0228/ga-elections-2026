@@ -134,8 +134,9 @@ export interface RSSFeedType {
   url: string;
   category: string;
   priority: number;
-  description: string;
+  description?: string;
   candidateId?: string;
+  raceFilter?: string; // For filtering by specific race
 }
 
 export interface RSSFeedConfig {
