@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Primary - Democratic Blue */
+  --color-primary-50: oklch(0.97 0.01 250);
+  --color-primary-100: oklch(0.93 0.03 250);
+  --color-primary-200: oklch(0.87 0.06 250);
+  --color-primary-300: oklch(0.78 0.10 250);
+  --color-primary-400: oklch(0.68 0.14 250);
+  --color-primary-500: oklch(0.59 0.18 250);
+  --color-primary-600: oklch(0.51 0.20 250);
+  --color-primary-700: oklch(0.45 0.20 250);
+  --color-primary-800: oklch(0.40 0.18 250);
+  --color-primary-900: oklch(0.35 0.15 250);
+  
+  /* Success - Green */
+  --color-success-500: oklch(0.62 0.20 145);
+  --color-success-600: oklch(0.54 0.20 145);
+  
+  /* Warning - Red */
+  --color-warning-500: oklch(0.60 0.22 25);
+  --color-warning-600: oklch(0.55 0.23 25);
+  
+  /* Caution - Yellow/Orange */
+  --color-caution-400: oklch(0.75 0.15 75);
+  --color-caution-500: oklch(0.68 0.17 75);
+  --color-caution-600: oklch(0.60 0.18 75);
+  
+  /* Note - Gray */
+  --color-note-400: oklch(0.65 0 0);
+  --color-note-500: oklch(0.55 0 0);
+  --color-note-600: oklch(0.45 0 0);
+  
+  /* Neutrals */
+  --color-gray-50: oklch(0.98 0 0);
+  --color-gray-100: oklch(0.96 0 0);
+  --color-gray-200: oklch(0.92 0 0);
+  --color-gray-300: oklch(0.85 0 0);
+  --color-gray-800: oklch(0.30 0 0);
+  --color-gray-900: oklch(0.20 0 0);
+  
+  /* Typography - Add Google Fonts */
+  --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+  --font-display: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-gray-900);
+  background-color: var(--color-gray-50);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
