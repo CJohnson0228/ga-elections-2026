@@ -1,7 +1,10 @@
 import type {
-  TransparencyUSAFinancialData,
-  FinancialSummary,
+  TransparencyUSAFinancialDataType,
+  FinancialSummaryType,
 } from "../types/financial";
+import { CacheManager } from "../utils/cacheManager";
+import { logger } from "../utils/logger";
+import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
 /**
  * TransparencyUSA Service
@@ -19,71 +22,102 @@ import type {
  * similar to how candidates are handled.
  */
 
-const GITHUB_BASE_URL =
-  "https://raw.githubusercontent.com/CJohnson0228/georgia-2026-election-data/main";
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
-
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-}
-
 class TransparencyUSAService {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new CacheManager({
+    duration: CACHE_DURATIONS.API,
+    storage: "memory",
+  });
 
   /**
    * Fetch financial data from GitHub repo
    * You can manually maintain financial data in JSON files
    */
   private async fetchFromGitHub<T>(path: string): Promise<T> {
-    const cacheKey = path;
-    const cached = this.cache.get(cacheKey);
+    const cacheKey = `${CACHE_KEYS.TRANSPARENCY_PREFIX}${path}`;
 
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
+    // Check cache
+    const cached = this.cache.get<T>(cacheKey, { storage: "memory" });
+    if (cached !== null) {
+      return cached;
     }
 
-    const url = `${GITHUB_BASE_URL}${path}`;
+    const url = `${API_CONFIG.GITHUB_DATA_BASE}${path}`;
     const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    this.cache.set(cacheKey, { data, timestamp: Date.now() });
+    const data: T = await response.json();
+    this.cache.set(cacheKey, data, { storage: "memory" });
 
     return data;
   }
 
   /**
+   * Parse currency string to number
+   */
+  private parseCurrency(amount: string): number {
+    if (!amount) return 0;
+    // Remove $, commas, and parse as float
+    const cleaned = amount.replace(/[$,]/g, "");
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+
+  /**
    * Get financial summary for a state candidate
-   * Expects a JSON file at /financial/{candidateId}.json
+   * Fetches from the unified state-financials.json file
    */
   async getFinancialSummary(
     candidateId: string,
     candidateName: string
-  ): Promise<FinancialSummary | null> {
+  ): Promise<FinancialSummaryType | null> {
     try {
-      const data = await this.fetchFromGitHub<TransparencyUSAFinancialData>(
-        `/financial/${candidateId}.json`
-      );
+      const data = await this.fetchFromGitHub<{
+        lastUpdated: string;
+        candidates: Record<string, {
+          name: string;
+          race: string;
+          party: string;
+          contributions: string;
+          loans: string;
+          expenditures: string;
+          status: string;
+        }>;
+      }>(`/financials/state-financials.json`);
+
+      // Try with the original ID first, then try converting hyphens to underscores
+      let candidate = data.candidates[candidateId];
+      if (!candidate) {
+        const alternateId = candidateId.replace(/-/g, "_");
+        candidate = data.candidates[alternateId];
+      }
+
+      if (!candidate) {
+        logger.warn(`No financial data found for ${candidateId}`);
+        return null;
+      }
+
+      const contributions = this.parseCurrency(candidate.contributions);
+      const loans = this.parseCurrency(candidate.loans);
+      const expenditures = this.parseCurrency(candidate.expenditures);
+
+      // Calculate cash on hand: contributions + loans - expenditures
+      const cashOnHand = contributions + loans - expenditures;
 
       return {
         candidateId,
         candidateName,
-        totalRaised: data.totalContributions || 0,
-        totalSpent: data.totalExpenditures || 0,
-        cashOnHand: data.cashOnHand || 0,
-        lastUpdated: data.lastReportDate || new Date().toISOString(),
+        totalRaised: contributions + loans,
+        totalSpent: expenditures,
+        cashOnHand: Math.max(0, cashOnHand), // Ensure non-negative
+        lastUpdated: data.lastUpdated || new Date().toISOString(),
         source: "transparencyUSA",
-        filingPeriod: data.reportingPeriod,
+        filingPeriod: "Latest Report",
       };
     } catch (error) {
-      console.warn(
-        `No financial data found for ${candidateId}:`,
-        error
-      );
+      logger.warn(`No financial data found for ${candidateId}`, error);
       return null;
     }
   }
@@ -94,10 +128,10 @@ class TransparencyUSAService {
    */
   async getRaceFinancials(
     raceFilter: string
-  ): Promise<FinancialSummary[]> {
+  ): Promise<FinancialSummaryType[]> {
     try {
       const data = await this.fetchFromGitHub<{
-        candidates: TransparencyUSAFinancialData[];
+        candidates: TransparencyUSAFinancialDataType[];
       }>(`/financial/races/${raceFilter}.json`);
 
       return data.candidates.map((candidate) => ({
@@ -111,16 +145,18 @@ class TransparencyUSAService {
         filingPeriod: candidate.reportingPeriod,
       }));
     } catch (error) {
-      console.warn(`No financial data found for race ${raceFilter}:`, error);
+      logger.warn(`No race financial data found for ${raceFilter}`, error);
       return [];
     }
   }
 
   /**
-   * Check if a race is unopposed based on financial filings
-   * A race is unopposed if only one candidate has filed financial reports
+   * Check if a race is unopposed based on financial data
    */
-  async isRaceUnopposed(candidateIds: string[]): Promise<boolean> {
+  async isRaceUnopposed(
+    _raceFilter: string,
+    candidateIds: string[]
+  ): Promise<boolean> {
     const summaries = await Promise.all(
       candidateIds.map((id) =>
         this.getFinancialSummary(id, "")
@@ -137,15 +173,15 @@ class TransparencyUSAService {
    * Manually scrape TransparencyUSA (requires CORS proxy or backend)
    * This is a placeholder - implement based on your infrastructure
    */
-  async scrapeCandidate(_candidateName: string, _office: string): Promise<TransparencyUSAFinancialData | null> {
+  async scrapeCandidate(_candidateName: string, _office: string): Promise<TransparencyUSAFinancialDataType | null> {
     // TODO: Implement server-side scraping or use a CORS proxy
-    console.warn("Direct scraping not implemented. Please use GitHub JSON files or implement server-side scraping.");
+    logger.warn("Direct scraping not implemented. Please use GitHub JSON files or implement server-side scraping.");
     return null;
   }
 
   clearCache(): void {
-    this.cache.clear();
-    console.log("TransparencyUSA cache cleared");
+    this.cache.clearByPrefix(CACHE_KEYS.TRANSPARENCY_PREFIX, { storage: "memory" });
+    logger.info("TransparencyUSA cache cleared");
   }
 }
 

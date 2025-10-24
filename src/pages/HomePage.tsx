@@ -5,7 +5,7 @@ import {
   ImportantDates,
   FeaturedRaces,
   VoterResources,
-} from "../features/home/components";
+} from "../features/home";
 
 export default function HomePage() {
   return (

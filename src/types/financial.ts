@@ -1,6 +1,6 @@
 // Financial data types for OpenFEC and TransparencyUSA
 
-export interface FinancialSummary {
+export interface FinancialSummaryType {
   candidateId: string;
   candidateName: string;
   totalRaised: number;
@@ -12,7 +12,7 @@ export interface FinancialSummary {
   filingPeriod?: string;
 }
 
-export interface OpenFECCandidate {
+export interface OpenFECCandidateType {
   candidate_id: string;
   name: string;
   party: string;
@@ -23,7 +23,7 @@ export interface OpenFECCandidate {
   cycles: number[];
 }
 
-export interface OpenFECFinancialData {
+export interface OpenFECFinancialDataType {
   candidate_id: string;
   cycle: number;
   receipts: number;
@@ -33,7 +33,7 @@ export interface OpenFECFinancialData {
   last_updated: string;
 }
 
-export interface TransparencyUSAFinancialData {
+export interface TransparencyUSAFinancialDataType {
   candidateName: string;
   office: string;
   totalContributions: number;
@@ -43,10 +43,10 @@ export interface TransparencyUSAFinancialData {
   reportingPeriod: string;
 }
 
-export interface RaceFinancialSummary {
+export interface RaceFinancialSummaryType {
   raceId: string;
   raceName: string;
-  candidates: FinancialSummary[];
+  candidates: FinancialSummaryType[];
   isUnopposed: boolean;
   lastUpdated: string;
 }

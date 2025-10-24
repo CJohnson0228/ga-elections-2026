@@ -1,68 +1,36 @@
 import type {
-  CandidateData,
-  RSSFeedConfig,
-  LastUpdated,
-  GitHubCandidate,
-  GitHubRace,
-  RacesData,
+  CandidatesResponseType,
+  RSSFeedConfigType,
+  DataMetadataType,
+  CandidateType,
+  RaceType,
+  RacesResponseType,
+  FeaturedArticlesResponseType,
+  CategoriesResponseType,
 } from "../types";
-
-const GITHUB_BASE_URL =
-  "https://raw.githubusercontent.com/CJohnson0228/georgia-2026-election-data/main";
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
-
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-}
+import { cacheManager } from "../utils/cacheManager";
+import { logger } from "../utils/logger";
+import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
 class DataService {
-  private async fetchWithCache<T>(url: string, cacheKey: string): Promise<T> {
-    // Check cache first
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const cacheItem: CacheItem<T> = JSON.parse(cached);
-      const now = Date.now();
-      if (now - cacheItem.timestamp < CACHE_DURATION) {
-        console.log(`Cache hit for ${cacheKey}`);
-        return cacheItem.data;
-      }
-    }
-
-    // Fetch fresh data
-    console.log(`Fetching fresh data for ${cacheKey}`);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
-    }
-    const data: T = await response.json();
-
-    // Cache the result
-    const cacheItem: CacheItem<T> = {
-      data,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(cacheKey, JSON.stringify(cacheItem));
-
-    return data;
-  }
-
   /**
    * Fetch all candidates from the GitHub repo
    * @returns All candidates
    */
-  async getAllCandidates(): Promise<CandidateData> {
-    const indexUrl = `${GITHUB_BASE_URL}/candidates/index.json`;
-    const index = await this.fetchWithCache<{ id: string; filename: string }[]>(
-      indexUrl,
-      "candidates-index"
-    );
+  async getAllCandidates(): Promise<CandidatesResponseType> {
+    const indexUrl = `${API_CONFIG.GITHUB_DATA_BASE}/candidates/index.json`;
+    const index = await cacheManager.fetchWithCache<
+      { id: string; filename: string }[]
+    >(indexUrl, CACHE_KEYS.CANDIDATES_INDEX, {
+      duration: CACHE_DURATIONS.DATA,
+    });
 
     const candidatePromises = index.map(async (entry) => {
-      const candidateUrl = `${GITHUB_BASE_URL}/candidates/${entry.filename}`;
-      const candidate = await this.fetchWithCache<GitHubCandidate>(
+      const candidateUrl = `${API_CONFIG.GITHUB_DATA_BASE}/candidates/${entry.filename}`;
+      const candidate = await cacheManager.fetchWithCache<CandidateType>(
         candidateUrl,
-        `candidate-${entry.id}`
+        `${CACHE_KEYS.CANDIDATE_PREFIX}${entry.id}`,
+        { duration: CACHE_DURATIONS.DATA }
       );
       return candidate;
     });
@@ -80,7 +48,7 @@ class DataService {
    * @param raceFilter - The race filter (e.g., "ga_governor", "ga_senate_sd18")
    * @returns Filtered candidates
    */
-  async getCandidatesByRace(raceFilter: string): Promise<CandidateData> {
+  async getCandidatesByRace(raceFilter: string): Promise<CandidatesResponseType> {
     const allData = await this.getAllCandidates();
 
     const filtered = allData.candidates.filter(
@@ -97,18 +65,18 @@ class DataService {
    * Fetch all races from the GitHub repo
    * @returns All races as a Record object
    */
-  async getAllRaces(): Promise<RacesData> {
-    const indexUrl = `${GITHUB_BASE_URL}/races/index.json`;
-    const index = await this.fetchWithCache<{ id: string; filename: string }[]>(
-      indexUrl,
-      "races-index"
-    );
+  async getAllRaces(): Promise<RacesResponseType> {
+    const indexUrl = `${API_CONFIG.GITHUB_DATA_BASE}/races/index.json`;
+    const index = await cacheManager.fetchWithCache<
+      { id: string; filename: string }[]
+    >(indexUrl, CACHE_KEYS.RACES_INDEX, { duration: CACHE_DURATIONS.DATA });
 
     const racePromises = index.map(async (entry) => {
-      const raceUrl = `${GITHUB_BASE_URL}/races/${entry.filename}`;
-      const race = await this.fetchWithCache<GitHubRace>(
+      const raceUrl = `${API_CONFIG.GITHUB_DATA_BASE}/races/${entry.filename}`;
+      const race = await cacheManager.fetchWithCache<RaceType>(
         raceUrl,
-        `race-${entry.id}`
+        `${CACHE_KEYS.RACE_PREFIX}${entry.id}`,
+        { duration: CACHE_DURATIONS.DATA }
       );
       return { key: entry.id, race };
     });
@@ -116,7 +84,7 @@ class DataService {
     const allRaces = await Promise.all(racePromises);
 
     // Convert array to Record object
-    const racesRecord: Record<string, GitHubRace> = {};
+    const racesRecord: Record<string, RaceType> = {};
     allRaces.forEach(({ key, race }) => {
       racesRecord[key] = race;
     });
@@ -132,7 +100,7 @@ class DataService {
    * @param raceId - The race ID (e.g., "governor", "ga-senate-sd18")
    * @returns The race data
    */
-  async getRaceById(raceId: string): Promise<GitHubRace> {
+  async getRaceById(raceId: string): Promise<RaceType> {
     const allData = await this.getAllRaces();
     const race = allData.races[raceId];
 
@@ -143,34 +111,51 @@ class DataService {
     return race;
   }
 
-  async getRSSFeeds(): Promise<RSSFeedConfig> {
-    const url = `${GITHUB_BASE_URL}/news/rss-feeds.json`;
-    return this.fetchWithCache<RSSFeedConfig>(url, "rss-feeds");
+  async getRSSFeeds(): Promise<RSSFeedConfigType> {
+    const url = `${API_CONFIG.GITHUB_DATA_BASE}/news/rss-feeds.json`;
+    return cacheManager.fetchWithCache<RSSFeedConfigType>(
+      url,
+      CACHE_KEYS.RSS_FEEDS,
+      { duration: CACHE_DURATIONS.DATA }
+    );
   }
 
-  async getLastUpdated(): Promise<LastUpdated> {
-    const url = `${GITHUB_BASE_URL}/metadata/last-updated.json`;
-    return this.fetchWithCache<LastUpdated>(url, "last-updated");
+  async getLastUpdated(): Promise<DataMetadataType> {
+    const url = `${API_CONFIG.GITHUB_DATA_BASE}/metadata/last-updated.json`;
+    return cacheManager.fetchWithCache<DataMetadataType>(
+      url,
+      CACHE_KEYS.LAST_UPDATED,
+      { duration: CACHE_DURATIONS.DATA }
+    );
   }
 
-  async getFeaturedArticles(): Promise<any> {
-    const url = `${GITHUB_BASE_URL}/news/featured-articles.json`;
-    return this.fetchWithCache(url, "featured-articles");
+  async getFeaturedArticles(): Promise<FeaturedArticlesResponseType> {
+    const url = `${API_CONFIG.GITHUB_DATA_BASE}/news/featured-articles.json`;
+    return cacheManager.fetchWithCache<FeaturedArticlesResponseType>(
+      url,
+      CACHE_KEYS.FEATURED_ARTICLES,
+      { duration: CACHE_DURATIONS.DATA }
+    );
+  }
+
+  async getCategories(): Promise<CategoriesResponseType> {
+    const url = `${API_CONFIG.GITHUB_DATA_BASE}/races/raceCategories.json`;
+    return cacheManager.fetchWithCache<CategoriesResponseType>(
+      url,
+      "categories",
+      { duration: CACHE_DURATIONS.DATA }
+    );
   }
 
   clearCache(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach((key) => {
-      if (
-        key.startsWith("candidate-") ||
-        key === "candidates-index" ||
-        key.startsWith("race-") ||
-        key === "races-index"
-      ) {
-        localStorage.removeItem(key);
-      }
-    });
-    console.log("Cache cleared");
+    cacheManager.clearByPrefix(CACHE_KEYS.CANDIDATE_PREFIX);
+    cacheManager.clearByPrefix(CACHE_KEYS.RACE_PREFIX);
+    cacheManager.remove(CACHE_KEYS.CANDIDATES_INDEX);
+    cacheManager.remove(CACHE_KEYS.RACES_INDEX);
+    cacheManager.remove(CACHE_KEYS.RSS_FEEDS);
+    cacheManager.remove(CACHE_KEYS.FEATURED_ARTICLES);
+    cacheManager.remove(CACHE_KEYS.LAST_UPDATED);
+    logger.info("DataService cache cleared");
   }
 }
 

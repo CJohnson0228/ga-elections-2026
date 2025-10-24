@@ -3,7 +3,7 @@ import Card from "../../components/ui/Card";
 import PageHero from "../../components/ui/PageHero";
 import NewsFeed from "../news/NewsFeed";
 import RaceCard from "../../components/ui/RaceCard";
-import type { GitHubRace } from "../../types";
+import type { RaceType } from "../../types";
 
 interface CategoryPageTemplateProps {
   title: string;
@@ -11,7 +11,7 @@ interface CategoryPageTemplateProps {
   descriptionHeading: string;
   description: string;
   newsTitle: string;
-  categoryRaces: GitHubRace[];
+  categoryRaces: RaceType[];
   categoryTags: string[]; // Tags for filtering news
 }
 
@@ -31,7 +31,14 @@ export default function CategoryPageTemplate({
 
       {/* Content */}
       <Container className="py-12">
-        <Card className="mb-8">
+        <Card className="relative mb-8 z-0 overflow-clip border-primary-200">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+            style={{ backgroundImage: "url(/flag-backdrop.jpg)" }}
+          >
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 to-primary-300/80" />
+          </div>
           <h2 className="text-2xl font-display font-semibold text-gray-900 mb-4">
             {descriptionHeading}
           </h2>
@@ -66,11 +73,13 @@ export default function CategoryPageTemplate({
         </div>
 
         {/* News Feed - filtered by category tags */}
-        <div className="my-8">
-          <h2 className="text-2xl font-display font-semibold text-gray-900 mb-6">
-            {newsTitle}
-          </h2>
-          <NewsFeed raceFilter={categoryTags} showAllNews={true} />
+        <div className="mb-8 mt-16">
+          <NewsFeed
+            raceFilter={categoryTags}
+            sectionTitle={newsTitle}
+            showAllNews={true}
+            limit={6}
+          />
         </div>
       </Container>
     </>

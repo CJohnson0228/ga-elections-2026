@@ -1,9 +1,8 @@
 import type { NewsArticleType, RSSFeedType } from "../types";
-
-// Use Netlify function - uses relative URL so it works on any host (localhost, network IP, or production)
-const RSS_FUNCTION_URL = "/.netlify/functions/fetch-rss";
-
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+import type { RSSFunctionResponseType, RSSItemType } from "../types/rss";
+import { cacheManager } from "../utils/cacheManager";
+import { logger } from "../utils/logger";
+import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
 class RSSService {
   private cleanGoogleNewsTitle(title: string): string {
@@ -18,41 +17,34 @@ class RSSService {
   }
 
   async fetchFeed(feed: RSSFeedType): Promise<NewsArticleType[]> {
-    const cacheKey = `rss-${feed.id}`;
+    const cacheKey = `${CACHE_KEYS.RSS_PREFIX}${feed.id}`;
 
     // Check cache
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const cacheItem = JSON.parse(cached);
-        const now = Date.now();
-        if (now - cacheItem.timestamp < CACHE_DURATION) {
-          console.log(`RSS cache hit for ${feed.name}`);
-          return cacheItem.data;
-        }
-      } catch (e) {
-        console.error("Cache parse error:", e);
-      }
+    const cached = cacheManager.get<NewsArticleType[]>(cacheKey, {
+      duration: CACHE_DURATIONS.RSS,
+    });
+    if (cached !== null) {
+      return cached;
     }
 
     // Fetch fresh data
-    console.log(`Fetching RSS for ${feed.name} via Netlify function`);
+    logger.info(`Fetching RSS for ${feed.name} via Netlify function`);
 
     try {
-      const url = `${RSS_FUNCTION_URL}?url=${encodeURIComponent(feed.url)}`;
+      const url = `${API_CONFIG.NETLIFY_FUNCTIONS_BASE}/fetch-rss?url=${encodeURIComponent(feed.url)}`;
       const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: RSSFunctionResponseType = await response.json();
 
       if (data.status !== "ok") {
         throw new Error(`RSS fetch error: ${data.message || "Unknown error"}`);
       }
 
-      const articles: NewsArticleType[] = data.items.map((item: any) => ({
+      const articles: NewsArticleType[] = data.items.map((item: RSSItemType) => ({
         title: this.cleanGoogleNewsTitle(item.title),
         link: item.link,
         pubDate: item.pubDate,
@@ -62,28 +54,20 @@ class RSSService {
 
       // Cache results
       if (articles.length > 0) {
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify({
-            data: articles,
-            timestamp: Date.now(),
-          })
-        );
+        cacheManager.set(cacheKey, articles, { duration: CACHE_DURATIONS.RSS });
       }
 
       return articles;
     } catch (error) {
-      console.error(`Error fetching RSS for ${feed.name}:`, error);
+      logger.error(`Error fetching RSS for ${feed.name}`, error);
 
-      // Return cached data if available, even if expired
-      if (cached) {
-        try {
-          const cacheItem = JSON.parse(cached);
-          console.log(`Using stale cache for ${feed.name}`);
-          return cacheItem.data;
-        } catch (e) {
-          // Ignore
-        }
+      // Return stale cache if available
+      const staleCache = cacheManager.get<NewsArticleType[]>(cacheKey, {
+        duration: Infinity, // Get even if expired
+      });
+      if (staleCache !== null) {
+        logger.info(`Using stale cache for ${feed.name}`);
+        return staleCache;
       }
 
       return [];
@@ -180,13 +164,8 @@ class RSSService {
   }
 
   clearCache(): void {
-    const keys = Object.keys(localStorage);
-    keys.forEach((key) => {
-      if (key.startsWith("rss-")) {
-        localStorage.removeItem(key);
-      }
-    });
-    console.log("RSS cache cleared");
+    cacheManager.clearByPrefix(CACHE_KEYS.RSS_PREFIX);
+    logger.info("RSS cache cleared");
   }
 }
 

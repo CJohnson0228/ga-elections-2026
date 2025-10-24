@@ -6,6 +6,7 @@ import AboutPage from "./pages/AboutPage";
 import NewsPage from "./pages/NewsPage";
 import RacePage from "./pages/RacePage";
 import CategoryPage from "./pages/CategoryPage";
+import CandidatePage from "./pages/CandidatePage";
 
 // Router configuration
 export const router = createBrowserRouter([
@@ -50,6 +51,14 @@ export const router = createBrowserRouter([
         element: (
           <AnimatedPage>
             <RacePage />
+          </AnimatedPage>
+        ),
+      },
+      {
+        path: "candidate/:candidateId",
+        element: (
+          <AnimatedPage>
+            <CandidatePage />
           </AnimatedPage>
         ),
       },

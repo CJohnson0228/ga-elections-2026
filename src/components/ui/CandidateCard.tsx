@@ -1,25 +1,13 @@
 import { ExternalLink, Users, Briefcase, CheckCircle2, User } from "lucide-react";
 import Card from "./Card";
-import type { GitHubCandidate } from "../../types";
+import type { CandidateType } from "../../types";
+import { getPartyColor } from "../../utils/colorMaps";
 
 interface CandidateCardProps {
-  candidate: GitHubCandidate;
+  candidate: CandidateType;
 }
 
 export default function CandidateCard({ candidate }: CandidateCardProps) {
-  const getPartyColor = (party: string) => {
-    const lowerParty = party.toLowerCase();
-    if (lowerParty.includes("democrat")) {
-      return "bg-blue-100 text-blue-700 border-blue-300";
-    }
-    if (lowerParty.includes("republican")) {
-      return "bg-red-100 text-red-700 border-red-300";
-    }
-    if (lowerParty.includes("independent")) {
-      return "bg-purple-100 text-purple-700 border-purple-300";
-    }
-    return "bg-gray-100 text-gray-700 border-gray-300";
-  };
 
   return (
     <Card className="hover:shadow-lg transition-shadow">

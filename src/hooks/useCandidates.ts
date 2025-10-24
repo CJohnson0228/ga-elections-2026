@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { dataService } from "../services/dataService";
-import type { GitHubCandidate } from "../types";
+import type { CandidateType } from "../types";
 
 interface UseCandidatesResult {
-  candidates: GitHubCandidate[];
+  candidates: CandidateType[];
   loading: boolean;
   error: Error | null;
 }
@@ -14,7 +14,7 @@ interface UseCandidatesResult {
  * @returns Candidates, loading state, and error
  */
 export function useCandidates(raceFilter: string): UseCandidatesResult {
-  const [candidates, setCandidates] = useState<GitHubCandidate[]>([]);
+  const [candidates, setCandidates] = useState<CandidateType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -60,7 +60,7 @@ export function useCandidates(raceFilter: string): UseCandidatesResult {
  * @returns All candidates, loading state, and error
  */
 export function useAllCandidates(): UseCandidatesResult {
-  const [candidates, setCandidates] = useState<GitHubCandidate[]>([]);
+  const [candidates, setCandidates] = useState<CandidateType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

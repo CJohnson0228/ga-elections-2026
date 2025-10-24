@@ -33,9 +33,8 @@ export default function Footer() {
                 </span>
               </div>
               <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-4">
-                A Democratic organizing resource tracking open seats, candidate
-                campaigns, and fundraising across Georgia's 2026 elections.
-                Houston County focus on SD-20 and HD-146.
+                A grassroots Democratic organizing tool providing data-driven
+                insights to help Houston County Democrats win in 2026.
               </p>
 
               {/* Links */}
@@ -48,7 +47,7 @@ export default function Footer() {
                 </a>
                 <span className="text-gray-700">•</span>
                 <a
-                  href="https://www.houstoncountydemocrats.com"
+                  href="https://hocodemsga.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"

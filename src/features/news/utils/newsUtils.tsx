@@ -1,6 +1,7 @@
 import { dataService } from "../../../services/dataService";
 import { rssService } from "../../../services/rssService";
 import type { FeaturedArticleType, NewsArticleType } from "../../../types";
+import { getCategoryColor, getCategoryLabel } from "../../../utils/colorMaps";
 
 interface fetchNewsProps {
   raceFilter?: string | string[]; // Can be a specific filter, array of tags, or "all"
@@ -100,32 +101,6 @@ const getRelativeTime = (dateString: string): string => {
     const years = Math.floor(diffInDays / 365);
     return years === 1 ? "1 year ago" : `${years} years ago`;
   }
-};
-
-// Get category badge color
-const getCategoryColor = (category: string): string => {
-  const colorMap: Record<string, string> = {
-    governor: "bg-primary-100 text-primary-700",
-    "lt-governor": "bg-success-500/20 text-success-600",
-    "state-senate": "bg-caution-400/20 text-caution-600",
-    "state-house": "bg-note-400/20 text-note-600",
-    "us-senate": "bg-warning-500/20 text-warning-600",
-    all: "bg-gray-100 text-gray-700",
-  };
-  return colorMap[category] || "bg-gray-100 text-gray-700";
-};
-
-// Get category label
-const getCategoryLabel = (category: string): string => {
-  const labelMap: Record<string, string> = {
-    governor: "Governor",
-    "lt-governor": "Lt. Governor",
-    "state-senate": "State Senate",
-    "state-house": "State House",
-    "us-senate": "U.S. Senate",
-    all: "General",
-  };
-  return labelMap[category] || category;
 };
 
 export { getCategoryColor, getCategoryLabel, getRelativeTime, fetchNews };

@@ -27,7 +27,8 @@ function getIcon(raceFilter: string): ReactNode {
   // Check for specific races first
   if (raceFilter === "ga_governor") return <Landmark className="w-7 h-7" />;
   if (raceFilter === "ga_lt_governor") return <Building className="w-7 h-7" />;
-  if (raceFilter === "ga_secretaryofstate") return <PenTool className="w-7 h-7" />;
+  if (raceFilter === "ga_secretaryofstate")
+    return <PenTool className="w-7 h-7" />;
   if (raceFilter === "ga_attorneygeneral") return <Gavel className="w-7 h-7" />;
 
   // Check for House races (state or federal)
@@ -53,7 +54,14 @@ export default function RaceCard({
   const icon = getIcon(raceFilter);
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 hover:border-primary-300 border-2 border-primary-200 bg-primary-50/30 flex flex-col">
+    <Card className="relative group hover:shadow-xl transition-all duration-300 overflow-clip hover:border-primary-300 border-2 border-primary-200 bg-primary-50/30 flex flex-col z-0">
+      <div
+        className="absolute inset-0 bg-size-[auto_50%] bg-center bg-no-repeat -z-10"
+        style={{ backgroundImage: "url(/Seal_of_Georgia.svg)" }}
+      >
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-white/90" />
+      </div>
       <div className="mb-6 flex-1">
         {/* Icon + Open Seat Badge */}
         <div className="flex items-start justify-between mb-4">

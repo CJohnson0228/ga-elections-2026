@@ -11,12 +11,18 @@ interface NewsFeedProps {
   raceFilter?: string | string[]; // Can be a specific filter, array of tags, or "all"
   candidateId?: string;
   showAllNews?: boolean; // If true, shows both featured and latest news. If false, only featured.
+  limit?: number; // Limit number of live articles to display (0 = show all)
+  sectionTitle?: string;
+  sectionSubTitle?: string;
 }
 
 export default function NewsFeed({
   raceFilter = "all",
   candidateId,
   showAllNews = false,
+  limit = 0,
+  sectionTitle = "Election News",
+  sectionSubTitle = "Stay informed with curated coverage and the latest developments",
 }: NewsFeedProps) {
   const [featuredArticles, setFeaturedArticles] = useState<
     FeaturedArticleType[]
@@ -91,12 +97,10 @@ export default function NewsFeed({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div className="flex-1">
           <h2 className="text-3xl font-display font-bold text-gray-900 mb-3 text-center sm:text-left">
-            Election News
+            {sectionTitle}
           </h2>
           <div className="flex items-center justify-center sm:justify-start gap-3">
-            <p className="text-gray-600 text-lg">
-              Stay informed with curated coverage and the latest developments
-            </p>
+            <p className="text-gray-600 text-lg">{sectionSubTitle}</p>
             {/* Refresh button - mobile (next to subtitle) */}
             <button
               onClick={handleRefresh}
@@ -155,9 +159,11 @@ export default function NewsFeed({
       {showAllNews ? (
         <div>
           {/* Subtitle */}
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
-            Other Related News
-          </h3>
+          {featuredArticles.length > 0 && (
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
+              Other Related News
+            </h3>
+          )}
 
           {/* Latest articles grid */}
           {liveArticles.length === 0 ? (
@@ -171,10 +177,12 @@ export default function NewsFeed({
               </div>
             </Card>
           ) : (
-            <div className="flex flex-wrap gap-4">
-              {liveArticles.map((article, index) => (
-                <LiveArticle article={article} index={index} />
-              ))}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              {(limit > 0 ? liveArticles.slice(0, limit) : liveArticles).map(
+                (article, index) => (
+                  <LiveArticle key={article.link} article={article} index={index} />
+                )
+              )}
             </div>
           )}
         </div>

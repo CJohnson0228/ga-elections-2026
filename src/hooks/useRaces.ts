@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { dataService } from '../services/dataService';
-import type { GitHubRace } from '../types';
+import type { RaceType } from '../types';
 
 interface UseRacesResult {
-  races: Record<string, GitHubRace>;
+  races: Record<string, RaceType>;
   loading: boolean;
   error: Error | null;
 }
@@ -12,7 +12,7 @@ interface UseRacesResult {
  * Hook to fetch all races from GitHub
  */
 export function useRaces(): UseRacesResult {
-  const [races, setRaces] = useState<Record<string, GitHubRace>>({});
+  const [races, setRaces] = useState<Record<string, RaceType>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -50,7 +50,7 @@ export function useRaces(): UseRacesResult {
 }
 
 interface UseRaceResult {
-  race: GitHubRace | null;
+  race: RaceType | null;
   loading: boolean;
   error: Error | null;
 }
@@ -59,7 +59,7 @@ interface UseRaceResult {
  * Hook to fetch a specific race by ID from GitHub
  */
 export function useRace(raceId: string): UseRaceResult {
-  const [race, setRace] = useState<GitHubRace | null>(null);
+  const [race, setRace] = useState<RaceType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

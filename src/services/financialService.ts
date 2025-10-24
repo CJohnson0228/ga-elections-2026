@@ -1,10 +1,10 @@
 import { openFECService } from "./openFECService";
 import { transparencyUSAService } from "./transparencyUSAService";
 import type {
-  FinancialSummary,
-  RaceFinancialSummary,
+  FinancialSummaryType,
+  RaceFinancialSummaryType,
 } from "../types/financial";
-import type { GitHubCandidate } from "../types";
+import type { CandidateType } from "../types";
 
 /**
  * Unified Financial Service
@@ -16,8 +16,8 @@ class FinancialService {
    * Automatically determines whether to use OpenFEC or TransparencyUSA based on race type
    */
   async getCandidateFinancials(
-    candidate: GitHubCandidate
-  ): Promise<FinancialSummary | null> {
+    candidate: CandidateType
+  ): Promise<FinancialSummaryType | null> {
     const isFederal =
       candidate.race.startsWith("us_senate") ||
       candidate.race.startsWith("us_house");
@@ -62,14 +62,14 @@ class FinancialService {
    */
   async getRaceFinancials(
     raceFilter: string,
-    candidates: GitHubCandidate[]
-  ): Promise<RaceFinancialSummary> {
+    candidates: CandidateType[]
+  ): Promise<RaceFinancialSummaryType> {
     const candidateFinancials = await Promise.all(
       candidates.map((c) => this.getCandidateFinancials(c))
     );
 
     const validFinancials = candidateFinancials.filter(
-      (f): f is FinancialSummary => f !== null
+      (f): f is FinancialSummaryType => f !== null
     );
 
     // Determine if race is unopposed
@@ -92,7 +92,7 @@ class FinancialService {
    */
   async isRaceUnopposed(
     raceFilter: string,
-    candidates: GitHubCandidate[]
+    candidates: CandidateType[]
   ): Promise<boolean> {
     const summary = await this.getRaceFinancials(raceFilter, candidates);
     return summary.isUnopposed;
@@ -102,8 +102,8 @@ class FinancialService {
    * Extract FEC ID from candidate data
    * This assumes you add externalIds.openFEC to your candidate JSON
    */
-  private extractFECId(_candidate: GitHubCandidate): string | null {
-    // TODO: Add externalIds to GitHubCandidate type and candidate JSON
+  private extractFECId(_candidate: CandidateType): string | null {
+    // TODO: Add externalIds to CandidateType type and candidate JSON
     // For now, return null - you'll need to add this field
     return null;
   }
@@ -124,7 +124,7 @@ class FinancialService {
   /**
    * Get financial summary text for display
    */
-  getFinancialSummaryText(summary: FinancialSummary | null): string {
+  getFinancialSummaryText(summary: FinancialSummaryType | null): string {
     if (!summary) {
       return "No financial data available";
     }

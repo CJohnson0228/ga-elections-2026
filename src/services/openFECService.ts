@@ -1,32 +1,30 @@
 import type {
-  OpenFECCandidate,
-  OpenFECFinancialData,
-  FinancialSummary,
+  OpenFECCandidateType,
+  OpenFECFinancialDataType,
+  FinancialSummaryType,
 } from "../types/financial";
+import { CacheManager } from "../utils/cacheManager";
+import { logger } from "../utils/logger";
+import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
 const API_KEY = import.meta.env.VITE_OPENFEC_API_KEY;
-const BASE_URL = "https://api.open.fec.gov/v1";
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
-
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-}
 
 class OpenFECService {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new CacheManager({
+    duration: CACHE_DURATIONS.API,
+    storage: "memory",
+  });
 
   private async fetchWithCache<T>(
     endpoint: string,
     params: Record<string, string | number> = {}
   ): Promise<T> {
-    const cacheKey = `${endpoint}?${JSON.stringify(params)}`;
+    const cacheKey = `${CACHE_KEYS.OPENFEC_PREFIX}${endpoint}?${JSON.stringify(params)}`;
 
     // Check cache
-    const cached = this.cache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log(`Cache hit for ${cacheKey}`);
-      return cached.data;
+    const cached = this.cache.get<T>(cacheKey);
+    if (cached !== null) {
+      return cached;
     }
 
     // Build URL with params
@@ -37,7 +35,7 @@ class OpenFECService {
       ),
     });
 
-    const url = `${BASE_URL}${endpoint}?${urlParams}`;
+    const url = `${API_CONFIG.OPENFEC_BASE}${endpoint}?${urlParams}`;
 
     try {
       const response = await fetch(url);
@@ -48,11 +46,11 @@ class OpenFECService {
       const data = await response.json();
 
       // Cache the result
-      this.cache.set(cacheKey, { data, timestamp: Date.now() });
+      this.cache.set(cacheKey, data);
 
       return data;
     } catch (error) {
-      console.error("Error fetching from OpenFEC:", error);
+      logger.error("Error fetching from OpenFEC", error);
       throw error;
     }
   }
@@ -64,7 +62,7 @@ class OpenFECService {
     name: string,
     state: string = "GA",
     office?: "H" | "S"
-  ): Promise<OpenFECCandidate[]> {
+  ): Promise<OpenFECCandidateType[]> {
     const params: Record<string, string | number> = {
       state,
       per_page: 20,
@@ -78,7 +76,7 @@ class OpenFECService {
       params.office = office;
     }
 
-    const response = await this.fetchWithCache<{ results: OpenFECCandidate[] }>(
+    const response = await this.fetchWithCache<{ results: OpenFECCandidateType[] }>(
       "/candidates/search/",
       params
     );
@@ -89,15 +87,15 @@ class OpenFECService {
   /**
    * Get candidate by FEC ID
    */
-  async getCandidateById(candidateId: string): Promise<OpenFECCandidate | null> {
+  async getCandidateById(candidateId: string): Promise<OpenFECCandidateType | null> {
     try {
       const response = await this.fetchWithCache<{
-        results: OpenFECCandidate[];
+        results: OpenFECCandidateType[];
       }>(`/candidate/${candidateId}/`, {});
 
       return response.results?.[0] || null;
     } catch (error) {
-      console.error(`Error fetching candidate ${candidateId}:`, error);
+      logger.error(`Error fetching candidate ${candidateId}`, error);
       return null;
     }
   }
@@ -108,10 +106,10 @@ class OpenFECService {
   async getCandidateFinancials(
     candidateId: string,
     cycle: number = 2026
-  ): Promise<OpenFECFinancialData | null> {
+  ): Promise<OpenFECFinancialDataType | null> {
     try {
       const response = await this.fetchWithCache<{
-        results: OpenFECFinancialData[];
+        results: OpenFECFinancialDataType[];
       }>(`/candidate/${candidateId}/totals/`, {
         cycle,
         sort_hide_null: "false",
@@ -119,10 +117,7 @@ class OpenFECService {
 
       return response.results?.[0] || null;
     } catch (error) {
-      console.error(
-        `Error fetching financials for ${candidateId}:`,
-        error
-      );
+      logger.error(`Error fetching financials for ${candidateId}`, error);
       return null;
     }
   }
@@ -134,7 +129,7 @@ class OpenFECService {
     candidateId: string,
     candidateName: string,
     cycle: number = 2026
-  ): Promise<FinancialSummary | null> {
+  ): Promise<FinancialSummaryType | null> {
     const financials = await this.getCandidateFinancials(candidateId, cycle);
 
     if (!financials) {
@@ -161,9 +156,9 @@ class OpenFECService {
     state: string = "GA",
     district: string,
     cycle: number = 2026
-  ): Promise<OpenFECCandidate[]> {
+  ): Promise<OpenFECCandidateType[]> {
     const response = await this.fetchWithCache<{
-      results: OpenFECCandidate[];
+      results: OpenFECCandidateType[];
     }>("/candidates/search/", {
       state,
       district,
@@ -181,9 +176,9 @@ class OpenFECService {
   async getSenateCandidates(
     state: string = "GA",
     cycle: number = 2026
-  ): Promise<OpenFECCandidate[]> {
+  ): Promise<OpenFECCandidateType[]> {
     const response = await this.fetchWithCache<{
-      results: OpenFECCandidate[];
+      results: OpenFECCandidateType[];
     }>("/candidates/search/", {
       state,
       office: "S",
@@ -215,8 +210,8 @@ class OpenFECService {
   }
 
   clearCache(): void {
-    this.cache.clear();
-    console.log("OpenFEC cache cleared");
+    this.cache.clearByPrefix(CACHE_KEYS.OPENFEC_PREFIX, { storage: "memory" });
+    logger.info("OpenFEC cache cleared");
   }
 }
 

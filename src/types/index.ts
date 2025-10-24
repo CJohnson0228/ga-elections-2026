@@ -1,79 +1,5 @@
-// Type exports
-export type Party = "Democratic" | "Republican" | "Independent" | "Other";
-export type RaceType =
-  | "ga_governor"
-  | "ga_lt_governor"
-  | "ga_secretaryofstate"
-  | "ga_attorneygeneral"
-  | "ga_senate"
-  | "ga_house"
-  | "us_senate"
-  | "us_house"
-  | "other";
-
-export interface Candidate {
-  id: string;
-  name: string;
-  party: Party;
-  race: RaceType;
-  imageUrl?: string;
-  bio?: string;
-  website?: string;
-  socialMedia?: {
-    twitter?: string;
-    facebook?: string;
-    instagram?: string;
-  };
-  endorsements?: string[];
-  policyPositions?: PolicyPosition[];
-  fundraising?: FundraisingData;
-  sources?: string[];
-}
-
-export interface PolicyPosition {
-  category: string;
-  title: string;
-  description: string;
-  source?: string;
-}
-
-export interface FundraisingData {
-  totalRaised: number;
-  totalSpent: number;
-  cashOnHand: number;
-  smallDonorContributions?: number;
-  largeDonorContributions?: number;
-  lastUpdated: string;
-  quarterlyReports?: QuarterlyReport[];
-}
-
-export interface QuarterlyReport {
-  quarter: string;
-  year: number;
-  raised: number;
-  spent: number;
-}
-
-export interface PollingLocation {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  zipCode: string;
-  hours?: string;
-  earlyVoting?: boolean;
-}
-
-export interface Race {
-  id: string;
-  title: string;
-  description: string;
-  electionDate: string;
-  candidates: Candidate[];
-}
-
-// GitHub data structure types - matches candidate JSON files in repo
-export interface GitHubCandidate {
+// Candidate data structure - matches candidate JSON files in repo
+export interface CandidateType {
   id: string;
   name: string;
   party: string;
@@ -93,13 +19,13 @@ export interface GitHubCandidate {
   sources: string[];
 }
 
-export interface CandidateData {
-  candidates: GitHubCandidate[];
+export interface CandidatesResponseType {
+  candidates: CandidateType[];
   lastUpdated: string;
 }
 
-// GitHub race data structure - matches race JSON files in repo
-export interface GitHubRace {
+// Race data structure - matches race JSON files in repo
+export interface RaceType {
   id: string;
   title: string;
   openSeat: boolean;
@@ -123,11 +49,12 @@ export interface GitHubRace {
   };
 }
 
-export interface RacesData {
-  races: Record<string, GitHubRace>;
+export interface RacesResponseType {
+  races: Record<string, RaceType>;
   lastUpdated: string;
 }
 
+// RSS Feed types
 export interface RSSFeedType {
   id: string;
   name: string;
@@ -140,11 +67,12 @@ export interface RSSFeedType {
   raceTags?: string[]; // Hierarchical tags for broader filtering
 }
 
-export interface RSSFeedConfig {
+export interface RSSFeedConfigType {
   feeds: RSSFeedType[];
   searchKeywords: string[];
 }
 
+// News article types
 export interface NewsArticleType {
   title: string;
   link: string;
@@ -175,7 +103,29 @@ export interface FeaturedArticleType {
   featured: boolean;
 }
 
-export interface LastUpdated {
+export interface FeaturedArticlesResponseType {
+  articles: FeaturedArticleType[];
+  lastUpdated?: string;
+}
+
+// Category data structure
+export interface CategoryDataType {
+  id: string;
+  title: string;
+  subtitle: string;
+  descriptionHeading: string;
+  description: string;
+  newsTitle: string;
+  raceTags: string[];
+}
+
+export interface CategoriesResponseType {
+  categories: Record<string, CategoryDataType>;
+  lastUpdated?: string;
+}
+
+// Data metadata type
+export interface DataMetadataType {
   lastUpdated: string;
   updatedBy: string;
   version: string;
@@ -185,30 +135,4 @@ export interface LastUpdated {
     news: string;
   };
   notes: string;
-}
-
-// Helper function to convert GitHubCandidate to Candidate format
-export function githubCandidateToCandidate(
-  ghCandidate: GitHubCandidate,
-  raceType: RaceType
-): Candidate {
-  return {
-    id: ghCandidate.id,
-    name: ghCandidate.name,
-    party: ghCandidate.party as Party,
-    race: raceType,
-    bio: ghCandidate.background,
-    website: ghCandidate.website || undefined,
-    socialMedia: {
-      twitter: ghCandidate.socialMedia.twitter || undefined,
-      facebook: ghCandidate.socialMedia.facebook || undefined,
-      instagram: ghCandidate.socialMedia.instagram || undefined,
-    },
-    endorsements: ghCandidate.endorsements,
-    policyPositions: ghCandidate.keyIssues.map((issue) => ({
-      category: "Policy",
-      title: issue,
-      description: issue,
-    })),
-  };
 }
