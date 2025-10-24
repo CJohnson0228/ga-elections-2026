@@ -30,3 +30,4 @@ dist-ssr
 
 # Cloned election data repo (managed separately)
 election-data/
+scrapper/

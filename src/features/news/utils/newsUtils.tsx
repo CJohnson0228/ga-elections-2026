@@ -53,17 +53,17 @@ const fetchNews = async ({
       liveNews = await rssService.fetchByCandidateId(
         feedConfig.feeds,
         candidateId,
-        10
+        20
       );
     } else if (raceFilter && raceFilter !== "all") {
       // Use the new fetchByRaceFilter method that handles both strings and arrays
       liveNews = await rssService.fetchByRaceFilter(
         feedConfig.feeds,
         raceFilter,
-        10
+        30
       );
     } else {
-      liveNews = await rssService.fetchMultipleFeeds(feedConfig.feeds, 10);
+      liveNews = await rssService.fetchMultipleFeeds(feedConfig.feeds, 30);
     }
 
     setLiveArticles(liveNews);
