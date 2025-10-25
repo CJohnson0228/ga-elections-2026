@@ -19,7 +19,7 @@ function FeaturedArticle(props: FeaturedArticleProps) {
       href={article.link}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block"
+      className="group block w-full h-full cursor-pointer"
     >
       <Card
         padding="none"

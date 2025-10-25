@@ -180,7 +180,11 @@ export default function NewsFeed({
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               {(limit > 0 ? liveArticles.slice(0, limit) : liveArticles).map(
                 (article, index) => (
-                  <LiveArticle key={article.link} article={article} index={index} />
+                  <LiveArticle
+                    key={article.link}
+                    article={article}
+                    index={index}
+                  />
                 )
               )}
             </div>
