@@ -13,6 +13,12 @@ Georgia Elections 2026 is a **grassroots organizing hub** built by and for Houst
 
 We're building the tools Democratic organizers need: real-time campaign finance tracking, comprehensive candidate profiles, and resources to mobilize effectively. Georgia proved in 2020-2021 that organizing matters. Let's do it again.
 
+## 🔗 Live Site
+
+**[https://georgia-elections-2026.netlify.app](https://georgia-elections-2026.netlify.app)**
+
+Track Georgia's 2026 elections in real-time.
+
 ### Key Features
 
 - **Comprehensive Race Coverage**: All major federal and state races in Georgia for 2026, with focus on competitive districts
