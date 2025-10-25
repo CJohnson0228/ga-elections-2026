@@ -18,6 +18,32 @@ We're building the tools Democratic organizers need: real-time campaign finance 
 **[https://georgia-elections-2026.netlify.app](https://georgia-elections-2026.netlify.app)**
 [![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR-SITE-ID/deploy-status)](https://app.netlify.com/sites/georgia-elections-2026/deploys)
 
+## Screenshots
+
+### Homepage
+
+![Homepage](docs/images/home-page.png)
+
+### Candidate Profile
+
+![Candidate Profile](docs/images/candidate-profile.png)
+
+### Candidate List (on individual race view)
+
+![Candidate List](docs/images/candidate-list.png)
+
+### Campaign Finance Tracking
+
+![Finance Dashboard](docs/images/finance-tracking.png)
+
+### News List
+
+![News List](docs/images/news-list.png)
+
+### Mobile Responsive Design
+
+![Mobile View](docs/images/mobile-responsive.png)
+
 Track Georgia's 2026 elections in real-time.
 
 ### Key Features
