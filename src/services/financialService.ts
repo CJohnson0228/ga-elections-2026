@@ -8,12 +8,20 @@ import type { CandidateType } from "../types";
 
 /**
  * Unified Financial Service
- * Combines OpenFEC (federal) and TransparencyUSA (state) data
+ *
+ * Provides a single interface for fetching campaign finance data from multiple sources.
+ * Automatically routes requests to the appropriate service based on race type:
+ * - Federal races (US Senate, US House): Uses OpenFEC API
+ * - State races (Governor, Lt. Governor, State Senate, State House): Uses TransparencyUSA scraped data
+ *
+ * Returns all data in a standardized FinancialSummaryType format regardless of source.
  */
 class FinancialService {
   /**
    * Get financial summary for a candidate
-   * Automatically determines whether to use OpenFEC or TransparencyUSA based on race type
+   * Automatically determines whether to use OpenFEC (federal) or TransparencyUSA (state) based on race type
+   * @param candidate - The candidate to fetch financial data for
+   * @returns Financial summary if available, null otherwise
    */
   async getCandidateFinancials(
     candidate: CandidateType
@@ -59,6 +67,9 @@ class FinancialService {
 
   /**
    * Get financial data for all candidates in a race
+   * @param raceFilter - The race identifier (e.g., "us_senate", "ga_governor", "ga_house_146")
+   * @param candidates - Array of candidates in the race
+   * @returns Summary of financial data for all candidates in the race, including unopposed status
    */
   async getRaceFinancials(
     raceFilter: string,
@@ -89,6 +100,10 @@ class FinancialService {
 
   /**
    * Check if a race is unopposed based on financial data
+   * A race is unopposed if only one candidate has raised funds
+   * @param raceFilter - The race identifier
+   * @param candidates - Array of candidates in the race
+   * @returns True if race is unopposed, false otherwise
    */
   async isRaceUnopposed(
     raceFilter: string,
@@ -100,16 +115,18 @@ class FinancialService {
 
   /**
    * Extract FEC ID from candidate data
-   * This assumes you add externalIds.openFEC to your candidate JSON
+   * @param _candidate - The candidate to extract FEC ID from
+   * @returns The FEC ID if available, null otherwise
+   * @note Future enhancement: Add externalIds.openFEC field to candidate JSON for direct FEC ID lookup
    */
   private extractFECId(_candidate: CandidateType): string | null {
-    // TODO: Add externalIds to CandidateType type and candidate JSON
-    // For now, return null - you'll need to add this field
     return null;
   }
 
   /**
-   * Format currency for display
+   * Format currency for display with abbreviated notation
+   * @param amount - The amount to format
+   * @returns Formatted string (e.g., "$1.5M", "$250K", "$500")
    */
   formatCurrency(amount: number): string {
     if (amount >= 1000000) {
@@ -123,6 +140,8 @@ class FinancialService {
 
   /**
    * Get financial summary text for display
+   * @param summary - The financial summary to format, or null if unavailable
+   * @returns Formatted summary string (e.g., "Raised $1.5M | Spent $800K | Cash $700K")
    */
   getFinancialSummaryText(summary: FinancialSummaryType | null): string {
     if (!summary) {

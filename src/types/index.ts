@@ -1,4 +1,7 @@
-// Candidate data structure - matches candidate JSON files in repo
+/**
+ * Candidate data structure
+ * Matches the candidate JSON files stored in the GitHub repository
+ */
 export interface CandidateType {
   id: string;
   name: string;
@@ -19,12 +22,18 @@ export interface CandidateType {
   sources: string[];
 }
 
+/**
+ * Response structure for candidate data from GitHub repository
+ */
 export interface CandidatesResponseType {
   candidates: CandidateType[];
   lastUpdated: string;
 }
 
-// Race data structure - matches race JSON files in repo
+/**
+ * Race data structure
+ * Matches the race JSON files stored in the GitHub repository
+ */
 export interface RaceType {
   id: string;
   title: string;
@@ -49,12 +58,18 @@ export interface RaceType {
   };
 }
 
+/**
+ * Response structure for race data from GitHub repository
+ */
 export interface RacesResponseType {
   races: Record<string, RaceType>;
   lastUpdated: string;
 }
 
-// RSS Feed types
+/**
+ * RSS feed configuration
+ * Defines a news feed source with filtering parameters
+ */
 export interface RSSFeedType {
   id: string;
   name: string;
@@ -67,12 +82,19 @@ export interface RSSFeedType {
   raceTags?: string[]; // Hierarchical tags for broader filtering
 }
 
+/**
+ * RSS feed configuration collection
+ * Contains all feed sources and search keywords for news aggregation
+ */
 export interface RSSFeedConfigType {
   feeds: RSSFeedType[];
   searchKeywords: string[];
 }
 
-// News article types
+/**
+ * Individual news article from RSS feeds
+ * Standard structure for all news articles displayed in the app
+ */
 export interface NewsArticleType {
   title: string;
   link: string;
@@ -81,6 +103,10 @@ export interface NewsArticleType {
   description?: string;
 }
 
+/**
+ * Featured news article with enhanced metadata
+ * Used for highlighting important campaign news on the homepage
+ */
 export interface FeaturedArticleType {
   id: string;
   title: string;
@@ -103,12 +129,18 @@ export interface FeaturedArticleType {
   featured: boolean;
 }
 
+/**
+ * Response structure for featured articles from GitHub repository
+ */
 export interface FeaturedArticlesResponseType {
   articles: FeaturedArticleType[];
   lastUpdated?: string;
 }
 
-// Category data structure
+/**
+ * Category data structure
+ * Defines high-level race categories (e.g., "Governor", "State Senate")
+ */
 export interface CategoryDataType {
   id: string;
   title: string;
@@ -119,12 +151,18 @@ export interface CategoryDataType {
   raceTags: string[];
 }
 
+/**
+ * Response structure for category data from GitHub repository
+ */
 export interface CategoriesResponseType {
   categories: Record<string, CategoryDataType>;
   lastUpdated?: string;
 }
 
-// Data metadata type
+/**
+ * Data metadata structure
+ * Tracks version information and update timestamps for all data sources
+ */
 export interface DataMetadataType {
   lastUpdated: string;
   updatedBy: string;

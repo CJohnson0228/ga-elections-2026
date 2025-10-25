@@ -4,7 +4,9 @@
  */
 
 /**
- * Get party-specific color classes
+ * Get party-specific Tailwind color classes
+ * @param party - Party name or abbreviation (e.g., "Democrat", "Republican", "Independent")
+ * @returns Tailwind CSS classes for background, text, and border colors
  */
 export function getPartyColor(party: string): string {
   const lowerParty = party.toLowerCase();
@@ -23,7 +25,9 @@ export function getPartyColor(party: string): string {
 }
 
 /**
- * Get category-specific color classes for news articles
+ * Get category-specific Tailwind color classes for news articles and UI elements
+ * @param category - Category identifier (e.g., "governor", "state-senate", "us-senate")
+ * @returns Tailwind CSS classes for background and text colors
  */
 export function getCategoryColor(category: string): string {
   const colorMap: Record<string, string> = {
@@ -40,6 +44,8 @@ export function getCategoryColor(category: string): string {
 
 /**
  * Get human-readable category label
+ * @param category - Category identifier (e.g., "governor", "state-senate")
+ * @returns Formatted category name for display (e.g., "Governor", "State Senate")
  */
 export function getCategoryLabel(category: string): string {
   const labelMap: Record<string, string> = {

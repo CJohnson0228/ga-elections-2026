@@ -9,6 +9,15 @@ import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
 const API_KEY = import.meta.env.VITE_OPENFEC_API_KEY;
 
+/**
+ * OpenFEC Service
+ *
+ * Fetches federal campaign finance data directly from the Federal Election Commission (FEC) API.
+ * Handles candidate searches and financial data for US Senate and US House races.
+ * Requires VITE_OPENFEC_API_KEY environment variable.
+ *
+ * API Documentation: https://api.open.fec.gov/developers/
+ */
 class OpenFECService {
   private cache = new CacheManager({
     duration: CACHE_DURATIONS.API,
@@ -57,6 +66,10 @@ class OpenFECService {
 
   /**
    * Search for a candidate by name and state
+   * @param name - Candidate name to search for
+   * @param state - Two-letter state code (default: "GA")
+   * @param office - Office type: "H" for House, "S" for Senate
+   * @returns Array of matching candidates from OpenFEC
    */
   async searchCandidate(
     name: string,
@@ -86,6 +99,8 @@ class OpenFECService {
 
   /**
    * Get candidate by FEC ID
+   * @param candidateId - The FEC candidate ID
+   * @returns Candidate data if found, null otherwise
    */
   async getCandidateById(candidateId: string): Promise<OpenFECCandidateType | null> {
     try {
@@ -102,6 +117,9 @@ class OpenFECService {
 
   /**
    * Get financial totals for a candidate
+   * @param candidateId - The FEC candidate ID
+   * @param cycle - Election cycle year (default: 2026)
+   * @returns Financial data from FEC, or null if unavailable
    */
   async getCandidateFinancials(
     candidateId: string,
@@ -123,7 +141,11 @@ class OpenFECService {
   }
 
   /**
-   * Get financial summary for a candidate
+   * Get financial summary for a candidate in standardized format
+   * @param candidateId - The FEC candidate ID
+   * @param candidateName - The candidate's name
+   * @param cycle - Election cycle year (default: 2026)
+   * @returns Standardized financial summary, or null if unavailable
    */
   async getFinancialSummary(
     candidateId: string,
@@ -151,6 +173,10 @@ class OpenFECService {
 
   /**
    * Get candidates running for US House in a specific district
+   * @param state - Two-letter state code (default: "GA")
+   * @param district - District number (e.g., "01", "14")
+   * @param cycle - Election cycle year (default: 2026)
+   * @returns Array of House candidates for the specified district
    */
   async getHouseCandidates(
     state: string = "GA",
@@ -172,6 +198,9 @@ class OpenFECService {
 
   /**
    * Get candidates running for US Senate
+   * @param state - Two-letter state code (default: "GA")
+   * @param cycle - Election cycle year (default: 2026)
+   * @returns Array of Senate candidates for the specified state
    */
   async getSenateCandidates(
     state: string = "GA",
@@ -192,6 +221,9 @@ class OpenFECService {
   /**
    * Check if a race is unopposed based on financial data
    * A race is considered unopposed if only one candidate has raised money
+   * @param candidateIds - Array of FEC candidate IDs to check
+   * @param cycle - Election cycle year (default: 2026)
+   * @returns True if race is unopposed (≤1 candidate with receipts), false otherwise
    */
   async isRaceUnopposed(
     candidateIds: string[],

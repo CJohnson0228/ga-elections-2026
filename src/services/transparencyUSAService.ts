@@ -9,17 +9,13 @@ import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 /**
  * TransparencyUSA Service
  *
- * Note: TransparencyUSA does not have a public API. This service provides
- * a structure for integrating financial data from Georgia state races.
+ * Fetches Georgia state-level campaign finance data from the GitHub repository.
+ * Data is collected via a Python scraper running in GitHub Actions (ga-elections-26-financial-scrapper)
+ * that scrapes TransparencyUSA, then outputs to state-financials.json in the
+ * georgia-2026-election-data repository.
  *
- * Options for implementation:
- * 1. Manual data entry into JSON files in the GitHub repo
- * 2. Server-side scraping (requires backend)
- * 3. Integration with Georgia Ethics Commission API (if available)
- * 4. Use of third-party data aggregators
- *
- * For now, this service can fetch from a JSON file in your GitHub repo
- * similar to how candidates are handled.
+ * This service fetches the pre-scraped data from state-financials.json and
+ * transforms it into the standardized FinancialSummaryType format.
  */
 
 class TransparencyUSAService {
@@ -67,7 +63,11 @@ class TransparencyUSAService {
 
   /**
    * Get financial summary for a state candidate
-   * Fetches from the unified state-financials.json file
+   * Fetches from the unified state-financials.json file in the GitHub repository
+   * Handles ID format variations (hyphens vs underscores) automatically
+   * @param candidateId - The candidate's ID (e.g., "keisha-l-bottoms")
+   * @param candidateName - The candidate's name
+   * @returns Standardized financial summary, or null if unavailable
    */
   async getFinancialSummary(
     candidateId: string,
@@ -124,7 +124,9 @@ class TransparencyUSAService {
 
   /**
    * Get all financial data for a specific race
-   * Expects a JSON file at /financial/races/{raceFilter}.json
+   * @param raceFilter - The race identifier (e.g., "ga_governor", "ga_senate_20")
+   * @returns Array of financial summaries for all candidates in the race
+   * @note Expects a JSON file at /financial/races/{raceFilter}.json
    */
   async getRaceFinancials(
     raceFilter: string
@@ -152,6 +154,10 @@ class TransparencyUSAService {
 
   /**
    * Check if a race is unopposed based on financial data
+   * A race is unopposed if only one or fewer candidates have filed financial reports
+   * @param _raceFilter - The race identifier (currently unused)
+   * @param candidateIds - Array of candidate IDs to check
+   * @returns True if race is unopposed (≤1 candidate with data), false otherwise
    */
   async isRaceUnopposed(
     _raceFilter: string,
@@ -170,15 +176,8 @@ class TransparencyUSAService {
   }
 
   /**
-   * Manually scrape TransparencyUSA (requires CORS proxy or backend)
-   * This is a placeholder - implement based on your infrastructure
+   * Clear cached TransparencyUSA data
    */
-  async scrapeCandidate(_candidateName: string, _office: string): Promise<TransparencyUSAFinancialDataType | null> {
-    // TODO: Implement server-side scraping or use a CORS proxy
-    logger.warn("Direct scraping not implemented. Please use GitHub JSON files or implement server-side scraping.");
-    return null;
-  }
-
   clearCache(): void {
     this.cache.clearByPrefix(CACHE_KEYS.TRANSPARENCY_PREFIX, { storage: "memory" });
     logger.info("TransparencyUSA cache cleared");
@@ -186,17 +185,3 @@ class TransparencyUSAService {
 }
 
 export const transparencyUSAService = new TransparencyUSAService();
-
-/**
- * Example JSON structure for /financial/{candidateId}.json:
- *
- * {
- *   "candidateName": "John Doe",
- *   "office": "Governor",
- *   "totalContributions": 1500000,
- *   "totalExpenditures": 800000,
- *   "cashOnHand": 700000,
- *   "lastReportDate": "2025-09-30",
- *   "reportingPeriod": "Q3 2025"
- * }
- */

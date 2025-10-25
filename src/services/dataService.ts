@@ -12,6 +12,13 @@ import { cacheManager } from "../utils/cacheManager";
 import { logger } from "../utils/logger";
 import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
+/**
+ * Data Service
+ *
+ * Fetches all static election data from the georgia-2026-election-data GitHub repository.
+ * Handles candidates, races, categories, featured articles, RSS feed configurations, and metadata.
+ * All data is cached in localStorage to minimize GitHub API calls and improve performance.
+ */
 class DataService {
   /**
    * Fetch all candidates from the GitHub repo

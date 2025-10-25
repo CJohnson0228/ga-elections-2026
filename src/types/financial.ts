@@ -1,5 +1,12 @@
-// Financial data types for OpenFEC and TransparencyUSA
+/**
+ * Financial data types for OpenFEC and TransparencyUSA
+ * Supports both federal (OpenFEC) and state (TransparencyUSA) campaign finance data
+ */
 
+/**
+ * Standardized financial summary
+ * Common format used across both OpenFEC and TransparencyUSA sources
+ */
 export interface FinancialSummaryType {
   candidateId: string;
   candidateName: string;
@@ -12,6 +19,10 @@ export interface FinancialSummaryType {
   filingPeriod?: string;
 }
 
+/**
+ * OpenFEC candidate data structure
+ * Raw candidate information from the Federal Election Commission API
+ */
 export interface OpenFECCandidateType {
   candidate_id: string;
   name: string;
@@ -23,6 +34,10 @@ export interface OpenFECCandidateType {
   cycles: number[];
 }
 
+/**
+ * OpenFEC financial data structure
+ * Raw financial totals from the Federal Election Commission API
+ */
 export interface OpenFECFinancialDataType {
   candidate_id: string;
   cycle: number;
@@ -33,6 +48,10 @@ export interface OpenFECFinancialDataType {
   last_updated: string;
 }
 
+/**
+ * TransparencyUSA financial data structure
+ * Financial data scraped from Georgia state campaign finance records
+ */
 export interface TransparencyUSAFinancialDataType {
   candidateName: string;
   office: string;
@@ -43,6 +62,10 @@ export interface TransparencyUSAFinancialDataType {
   reportingPeriod: string;
 }
 
+/**
+ * Race-level financial summary
+ * Aggregates financial data for all candidates in a specific race
+ */
 export interface RaceFinancialSummaryType {
   raceId: string;
   raceName: string;

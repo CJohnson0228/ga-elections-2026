@@ -26,7 +26,7 @@ dist-ssr
 *.sw?
 
 # Local Netlify folder
-.netlify
+.netlify/
 
 # Cloned election data repo (managed separately)
 election-data/

@@ -32,6 +32,9 @@ export class CacheManager {
 
   /**
    * Get cached data if available and not expired
+   * @param key - Cache key to retrieve
+   * @param options - Optional cache configuration override
+   * @returns Cached data if found and not expired, null otherwise
    */
   get<T>(key: string, options?: Partial<CacheOptions>): T | null {
     const opts = { ...this.defaultOptions, ...options };
@@ -65,6 +68,9 @@ export class CacheManager {
 
   /**
    * Store data in cache
+   * @param key - Cache key to store under
+   * @param data - Data to cache
+   * @param options - Optional cache configuration override
    */
   set<T>(key: string, data: T, options?: Partial<CacheOptions>): void {
     const opts = { ...this.defaultOptions, ...options };
@@ -90,6 +96,8 @@ export class CacheManager {
 
   /**
    * Remove specific cache entry
+   * @param key - Cache key to remove
+   * @param options - Optional cache configuration override
    */
   remove(key: string, options?: Partial<CacheOptions>): void {
     const opts = { ...this.defaultOptions, ...options };
@@ -104,6 +112,8 @@ export class CacheManager {
 
   /**
    * Clear all cache entries matching a prefix
+   * @param prefix - Key prefix to match (e.g., "openfec_")
+   * @param options - Optional cache configuration override
    */
   clearByPrefix(prefix: string, options?: Partial<CacheOptions>): void {
     const opts = { ...this.defaultOptions, ...options };
@@ -134,6 +144,7 @@ export class CacheManager {
 
   /**
    * Clear all cache
+   * @param options - Optional cache configuration override
    */
   clearAll(options?: Partial<CacheOptions>): void {
     const opts = { ...this.defaultOptions, ...options };
@@ -150,6 +161,12 @@ export class CacheManager {
 
   /**
    * Fetch with cache - combines fetch and cache logic
+   * Checks cache first, fetches if not found, then caches the result
+   * @param url - URL to fetch from
+   * @param cacheKey - Cache key to use for storing/retrieving data
+   * @param options - Optional cache configuration override
+   * @returns Fetched or cached data
+   * @throws Error if fetch fails
    */
   async fetchWithCache<T>(
     url: string,

@@ -4,6 +4,14 @@ import { cacheManager } from "../utils/cacheManager";
 import { logger } from "../utils/logger";
 import { API_CONFIG, CACHE_DURATIONS, CACHE_KEYS } from "../config";
 
+/**
+ * RSS Service
+ *
+ * Fetches and processes RSS news feeds from Georgia media outlets.
+ * Uses a Netlify serverless function to proxy RSS requests and avoid CORS issues.
+ * Processes feeds from sources like Georgia Recorder, AJC, GPB News, etc.
+ * Caches feed data in localStorage to reduce serverless function calls.
+ */
 class RSSService {
   private cleanGoogleNewsTitle(title: string): string {
     // Google News titles often have " - Source Name" at the end
