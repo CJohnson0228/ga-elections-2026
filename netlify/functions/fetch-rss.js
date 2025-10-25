@@ -22,6 +22,11 @@ export const handler = async (event, context) => {
   // Get RSS URL from query parameters
   const rssUrl = event.queryStringParameters?.url;
 
+  // Debug logging
+  console.log('Query parameters:', JSON.stringify(event.queryStringParameters));
+  console.log('RSS URL:', rssUrl);
+  console.log('RSS URL type:', typeof rssUrl);
+
   if (!rssUrl) {
     return {
       statusCode: 400,
@@ -29,6 +34,7 @@ export const handler = async (event, context) => {
       body: JSON.stringify({
         status: "error",
         message: 'Missing "url" query parameter',
+        received: event.queryStringParameters,
       }),
     };
   }

@@ -15,7 +15,6 @@ function FeaturedArticle(props: FeaturedArticleProps) {
   const article = props.article;
   return (
     <a
-      key={article.id}
       href={article.link}
       target="_blank"
       rel="noopener noreferrer"

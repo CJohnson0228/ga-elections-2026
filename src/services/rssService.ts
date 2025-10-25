@@ -27,6 +27,12 @@ class RSSService {
   async fetchFeed(feed: RSSFeedType): Promise<NewsArticleType[]> {
     const cacheKey = `${CACHE_KEYS.RSS_PREFIX}${feed.id}`;
 
+    // Validate feed URL
+    if (!feed.url) {
+      logger.error(`RSS feed ${feed.name} (${feed.id}) is missing URL`);
+      return [];
+    }
+
     // Check cache
     const cached = cacheManager.get<NewsArticleType[]>(cacheKey, {
       duration: CACHE_DURATIONS.RSS,

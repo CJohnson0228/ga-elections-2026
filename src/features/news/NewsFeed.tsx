@@ -149,7 +149,7 @@ export default function NewsFeed({
         <div>
           <div className="space-y-6">
             {featuredArticles.map((article) => (
-              <FeaturedArticle article={article} />
+              <FeaturedArticle key={article.id} article={article} />
             ))}
           </div>
         </div>
