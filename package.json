@@ -1,7 +1,14 @@
 {
   "name": "ga-elections-2026",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "Democratic organizing dashboard for Georgia 2026 elections",
+  "author": "Christopher M. Johnson",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CJohnson0228/ga-elections-2026"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite --host",
