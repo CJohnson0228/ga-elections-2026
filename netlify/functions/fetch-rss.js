@@ -1,21 +1,21 @@
-import fetch from 'node-fetch';
-import { DOMParser } from 'xmldom';
+import fetch from "node-fetch";
+import { DOMParser } from "xmldom";
 
 export const handler = async (event, context) => {
   // Enable CORS
   const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Content-Type': 'application/json',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Content-Type": "application/json",
   };
 
   // Handle preflight requests
-  if (event.httpMethod === 'OPTIONS') {
+  if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
       headers,
-      body: '',
+      body: "",
     };
   }
 
@@ -27,7 +27,7 @@ export const handler = async (event, context) => {
       statusCode: 400,
       headers,
       body: JSON.stringify({
-        status: 'error',
+        status: "error",
         message: 'Missing "url" query parameter',
       }),
     };
@@ -39,7 +39,13 @@ export const handler = async (event, context) => {
     // Fetch the RSS feed
     const response = await fetch(rssUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+        Accept:
+          "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.7",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
       },
     });
 
@@ -51,16 +57,16 @@ export const handler = async (event, context) => {
 
     // Parse XML
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
     // Check for parser errors
-    const parserErrors = xmlDoc.getElementsByTagName('parsererror');
+    const parserErrors = xmlDoc.getElementsByTagName("parsererror");
     if (parserErrors.length > 0) {
-      throw new Error('XML parsing failed');
+      throw new Error("XML parsing failed");
     }
 
     // Extract items from RSS feed
-    const items = xmlDoc.getElementsByTagName('item');
+    const items = xmlDoc.getElementsByTagName("item");
     const articles = [];
 
     for (let i = 0; i < items.length; i++) {
@@ -68,18 +74,19 @@ export const handler = async (event, context) => {
 
       const getElementText = (tagName) => {
         const elements = item.getElementsByTagName(tagName);
-        return elements.length > 0 ? elements[0].textContent : '';
+        return elements.length > 0 ? elements[0].textContent : "";
       };
 
-      const title = getElementText('title');
-      const link = getElementText('link');
-      const pubDate = getElementText('pubDate');
-      const description = getElementText('description');
-      const author = getElementText('author') || getElementText('dc:creator');
+      const title = getElementText("title");
+      const link = getElementText("link");
+      const pubDate = getElementText("pubDate");
+      const description = getElementText("description");
+      const author = getElementText("author") || getElementText("dc:creator");
 
       // Get source from Google News
-      const sourceElements = item.getElementsByTagName('source');
-      const source = sourceElements.length > 0 ? sourceElements[0].textContent : '';
+      const sourceElements = item.getElementsByTagName("source");
+      const source =
+        sourceElements.length > 0 ? sourceElements[0].textContent : "";
 
       if (title && link) {
         articles.push({
@@ -99,24 +106,25 @@ export const handler = async (event, context) => {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        status: 'ok',
+        status: "ok",
         items: articles,
         feed: {
-          title: xmlDoc.getElementsByTagName('title')[0]?.textContent || '',
-          description: xmlDoc.getElementsByTagName('description')[0]?.textContent || '',
-          link: xmlDoc.getElementsByTagName('link')[0]?.textContent || '',
+          title: xmlDoc.getElementsByTagName("title")[0]?.textContent || "",
+          description:
+            xmlDoc.getElementsByTagName("description")[0]?.textContent || "",
+          link: xmlDoc.getElementsByTagName("link")[0]?.textContent || "",
         },
       }),
     };
   } catch (error) {
-    console.error('Error fetching RSS feed:', error);
+    console.error("Error fetching RSS feed:", error);
 
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        status: 'error',
-        message: error.message || 'Failed to fetch RSS feed',
+        status: "error",
+        message: error.message || "Failed to fetch RSS feed",
       }),
     };
   }
