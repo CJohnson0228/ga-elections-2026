@@ -16,6 +16,7 @@ We're building the tools Democratic organizers need: real-time campaign finance 
 ## 🔗 Live Site
 
 **[https://georgia-elections-2026.netlify.app](https://georgia-elections-2026.netlify.app)**
+[![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR-SITE-ID/deploy-status)](https://app.netlify.com/sites/georgia-elections-2026/deploys)
 
 Track Georgia's 2026 elections in real-time.
 
